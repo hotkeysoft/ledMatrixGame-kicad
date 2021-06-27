@@ -1,34 +1,39 @@
 #include "rom.h"
 #include "TMS1000.h"
 
-#define K1 A0
-#define K2 A1
-#define K4 A2
+#define K1 PIN_PB3
+#define K2 PIN_PB4
+#define K4 PIN_PB5
 
-#define O0 8
-#define O1 9
-#define O2 10
-#define O3 11
-#define O4 12
+#define O0 PIN_PD0
+#define O1 PIN_PD1
+#define O2 PIN_PD2
+#define O3 PIN_PD3
+#define O4 PIN_PD4
+#define O5 PIN_PD5
+#define O6 PIN_PD6
 
-#define R0 0
-#define R1 1
-#define R2 2
-#define R3 3
-#define R4 4
-#define R5 5
-#define R6 6
-#define R7 7
+#define R0 PIN_PC0
+#define R1 PIN_PC1
+#define R2 PIN_PC2
+#define R3 PIN_PC3
+#define R4 PIN_PC4
+#define R5 PIN_PC5
+#define R6 PIN_PE0
+#define R7 PIN_PE1
+
+const int RPins[] = { R0, R1, R2, R3, R4, R5, R6, R7 };
 
 // Buzzer
-#define R8 A3
+#define R8 PIN_PB0
 
-#define R9 A4
-#define R10 A5
+// Buttons
+#define R9 PIN_PB1
+#define R10 PIN_PB2
 
-// Buttons connected to K1-K8
+// Buttons connected to K1-K4
 void inputKCallback() {
-      TMS1000::g_cpu.K = (PINC & 7) ^ 7;
+      TMS1000::g_cpu.K = ((PINB & 56) ^ 56) >> 3;
 }
 
 // LED array connected to R0-R7
@@ -38,7 +43,7 @@ void outputRCallback(TMS1000::BYTE pin, bool state) {
   switch (pin) {
     case 0: case 1: case 2: case 3:
     case 4: case 5: case 6: case 7:
-      digitalWrite(R0+pin, state);      
+      digitalWrite(RPins[pin], state);      
     break;
     case 8:
       digitalWrite(R8, state);
@@ -67,7 +72,14 @@ const uint8_t oMap[] = {
 };
 
 void outputOCallback(TMS1000::BYTE val) {
-  PORTB = oMap[val & 7];
+  if (val > 0)
+  {
+    PORTD = oMap[val & 7];
+  }
+  else 
+  {
+    PORTD = 0b11111111;
+  }
 }
 
 void setup() {
